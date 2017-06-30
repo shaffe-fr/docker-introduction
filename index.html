@@ -1,0 +1,430 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+	<title>Introduction à Docker</title>
+
+	<link rel="stylesheet" href="css/reveal.css">
+	<link rel="stylesheet" href="css/theme/black.css">
+	<!-- Theme used for syntax highlighting of code -->
+	<link rel="stylesheet" href="lib/css/zenburn.css">
+
+	<link rel="stylesheet" href="css/custom.css">
+
+	<!-- Printing and PDF exports -->
+	<script>
+        var link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.type = 'text/css';
+        link.href = window.location.search.match(/print-pdf/gi) ? 'css/print/pdf.css' : 'css/print/paper.css';
+        document.getElementsByTagName('head')[0].appendChild(link);
+	</script>
+</head>
+<body>
+<div class="reveal">
+	<div class="slides">
+		<section>
+			<h1>docker.io</h1>
+			<h3>Introduction à Docker</h3>
+			<p>
+				<small>Par <a href="https://www.github.com/shaffe-fr" target="_blank">Karel Faille</a> /
+					<a href="http://twitter.com/shaffe">@shaffe</a></small>
+			</p>
+		</section>
+		<section>
+			<h2>About me</h2>
+			<ul>
+				<li>Lead développeur chez Septime Création</li>
+				<li>Développeur frontend & backend PHP/JavaScript</li>
+				<li>Toujours à la recherche de l'environnement parfait !</li>
+			</ul>
+		</section>
+		<section>
+			<h2>Sommaire</h2>
+			<ol>
+				<li>Historique</li>
+				<li>Conteneurisation</li>
+				<li>L'isolation dans le noyau Linux</li>
+				<li>L'architecture Docker</li>
+				<li>Premiers pas</li>
+				<li>Conclusion</li>
+			</ol>
+		</section>
+		<section>
+			<h2>Historique de Docker</h2>
+			<div class="container">
+				<div class="col" style="padding-right: 15px;align-self: center">
+					<img src="img/dotcloud.png" width="300" alt="dotCloud">
+					<img src="img/docker.png" width="300" alt="Docker Inc." class="fragment" data-fragment-index="2">
+				</div>
+				<div class="col" style="flex: 2;">
+					<ul>
+						<li>Créé par la société dotCloud en tant que projet interne</li>
+						<li class="fragment" data-fragment-index="1">Mars 2013 : sortie de la première version open source</li>
+						<li class="fragment" data-fragment-index="2">Octobre 2013 : Dotcloud devient Docker Inc.</li>
+						<li class="fragment" data-fragment-index="3">Mai 2016 : contributions par Cisco, Google, IBM, Microsoft, Huawei, Red Hat...</li>
+					</ul>
+				</div>
+			</div>
+		</section>
+		<section>
+			<section>
+				<h2>Conteunerisation</h2>
+				<blockquote>“Docker est un logiciel libre qui automatise le déploiement d'applications dans
+					des conteneurs logiciels.”
+				</blockquote>
+				<small><em>Wikipedia</em></small>
+			</section>
+			<section>
+				<p>Dans un OS, la mémoire est séparée en deux espaces : </p>
+				<ul>
+					<li>le <em>kernel space</em></li>
+					<li>le <em>user space</em></li>
+				</ul>
+				<img src="img/user-space-vs-kernel-space-simple-user-space.png" width="760" height="300"
+				     alt="User space vs Kernel space">
+				<small>Image redhat.com</small>
+			</section>
+			<section>
+				<p>Conteneurisation : multiplication de <em>user spaces</em>.</p>
+				<img src="img/user-space-vs-kernel-space-simple-container.png" width="760" height="300"
+				     alt="User space container vs Kernel space">
+				<small>Image redhat.com</small>
+			</section>
+			<section>
+				<p>Le noyau Linux permet également d'isoler certaines ressources du kernel space pour le conteneur.</p>
+				<img src="img/user-space-vs-kernel-space-inside-container-system-calls.png" width="1172"
+				     alt="Kernel space resources isolation">
+				<small>Image redhat.com</small>
+			</section>
+			<section>
+				<h2>Conteneur vs machine virtuelle</h2>
+				<img src="img/user-space-vs-kernel-space-virtualization-vs-containerization.png" width="1060"
+				     alt="Virtualization vs containerization">
+				<small>Image redhat.com</small>
+			</section>
+		</section>
+		<section>
+			<section>
+				<h2>Fonctionnalités d'isolation du noyaux Linux</h2>
+				<ul>
+					<li>Control groups</li>
+					<li>Namespaces</li>
+					<li>Système de fichiers union-mount</li>
+					<li>Format conteneur</li>
+				</ul>
+			</section>
+			<section>
+				<h2>Control groups <span style="text-transform: none;">(cgroups)</span></h2>
+				<p>Gestion de la consommation des ressources physiques des conteneurs : RAM, CPU, I/O disque...</p>
+			</section>
+			<section>
+				<h2>Namespaces</h2>
+				<ul>
+					<li>pid (Process ID) : isolation des processus</li>
+					<li>net (Networking) : gestion des interfaces réseaux</li>
+					<li>ipc (InterProcess Communication) : gestion de l'accès aux ressources des autres processus</li>
+					<li>mnt (Mount) : gestion des points de montages</li>
+					<li>uts (Unix Timesharing System) : isolation du nom d'hôte et du nom de domaine</li>
+					<li>uid (User ID) : isolation des utilisateurs et privilèges</li>
+					<li>cgroups (Control groups) : isole le control group d'un processus</li>
+				</ul>
+			</section>
+			<section>
+				<h2>Système de fichier union-mount <span style="text-transform: none;">(UnionFS)</span></h2>
+				<p>Fusion de plusieurs systèmes de fichiers (couches, branches) en un seul point de montage.</p>
+				<!-- Limiter, prioriser, comptabiliser, isoler, controler^-->
+			</section>
+			<section>
+				<h2>Conteneur format</h2>
+				<ul>
+					<li>Manipule les namespaces, cgroups et UnionFS. <br><br></li>
+					<li>
+						Le docker engine supporte plusieurs formats :
+						<ul>
+							<li>libcontainer</li>
+							<li>LXC (Linux Containers)</li>
+							<li>libvirt...</li>
+						</ul>
+					</li>
+				</ul>
+			</section>
+		</section>
+		<section>
+			<section>
+				<h2>L'architecture docker</h2>
+				<img src="img/docker-architecture.svg" alt="The Docker architecture">
+				<small>Image docker.com</small>
+			</section>
+			<section>
+				<h2>Les images</h2>
+				<ul>
+					<li>Empilement de couches en lecture seule dans un système de fichier UnionFS</li>
+					<li>Chaque couche hérite de la précédente et apporte ses modifications</li>
+					<li>Créée à partir d'un Dockerfile où chaque instruction est une couche</li>
+					<li>Une image est non modifiable</li>
+					<li>Utilisée pour lancer un conteneur</li>
+					<li>Versionnée avec un système similaire à git.</li>
+				</ul>
+			</section>
+			<section>
+				<h2>Les conteneurs</h2>
+				<ul>
+					<li>Empilement d'une image et d'une couche modifiable</li>
+					<li>La couche modifiable contient les modifications liées à l'application et à l'utilisateur</li>
+					<li>Les modifications ne sont pas persistentes</li>
+				</ul>
+			</section>
+			<section>
+				<h2>Le Docker engine</h2>
+				<img src="img/engine-components-flow.png" height="450" alt="">
+				<p>
+					<small>Image docs.docker.com</small>
+				</p>
+			</section>
+			<section>
+				<h2>Docker daemon</h2>
+				<ul>
+					<li>Builde des images</li>
+					<li>Lance et gère les container</li>
+					<li>Manipulable avec l'API REST</li>
+				</ul>
+			</section>
+			<section>
+				<h2>Quelques commandes Docker CLI</h2>
+				<pre><code data-trim data-noescape>
+$ docker pull   # Récupère une image distante
+$ docker build  # Créer une image à partir d'un Dockerfile
+$ docker images # Listes les images de l'hôte
+$ docker run    # Lance une image
+$ docker ps     # Liste les containers (lancés et éteints)
+$ docker stop   # Arrête un container
+$ docker start  # Relance un container
+$ docker rm     # Supprime un container
+$ docker rmi    # Supprime une image
+                </code></pre>
+			</section>
+			<section>
+				<h2>Docker Hub</h2>
+				<ul>
+					<li>Dépot en ligne d'images</li>
+					<li>Facilite le travail collaboratif</li>
+					<li>Intégration continue (CI) : build automatique, webhooks..</li>
+					<li>Intégration avec GitHub / bitbucket</li>
+				</ul>
+			</section>
+		</section>
+		<section>
+			<section>
+				<h2>Premiers pas...</h2>
+			</section>
+			<section>
+				<h2>Premier conteneur</h2>
+				<pre><code data-trim data-noescape>
+$ docker pull ubuntu:latest
+
+$ docker images
+REPOSITORY    TAG         IMAGE ID      CREATED        SIZE
+ubuntu        latest      7b9b13f7b9c0  11 days ago    118.3 MB
+
+# Crée un conteneur à partir de ubuntu:latest,
+# y lance le programme bash et
+# y attache votre shell grâce aux options -it
+$ docker run -it ubuntu bash
+
+root@d882ad3827c4:/#
+
+root@d882ad3827c4:/# exit # ou Ctrl+d
+
+$ docker ps -a
+CONTAINER ID  IMAGE    COMMAND   CREATED        STATUS                     PORTS   NAMES
+d882ad3827c4  ubuntu   "bash"    2 minutes ago  Exited (0) 1 seconds ago          elegant_pike
+                </code></pre>
+			</section>
+			<section>
+				<h2>Première application node</h2>
+				<div style="text-align:left;">
+					<p>1. Récupérer l'image de base (optionnel)</p>
+					<pre><code>$ docker pull node:latest</code></pre>
+					<p>2. Créer un fichier server.js</p>
+					<pre><code class="shell" data-trim data-noescape>
+$ echo """
+const http = require('http')
+const server = http.createServer(function(req, res) {
+  res.end('Hello from the other side!')
+});
+server.listen(3000)
+""" > server.js
+                    </code></pre>
+					<p>3. Lancer l'image</p>
+					<pre><code>$ docker run -d --name hello-node -p 8080:3000 -v $(pwd):/app node:latest node /app/server.js</code></pre>
+				</div>
+			</section>
+			<section>
+				<h2>DockerFile</h2>
+				<p>Les fichiers Dockerfiles permettent de construire une image, étape par étape, calque par calque.</p>
+			</section>
+			<section>
+				<h2>Conteneuriser hello-node</h2>
+				<div>
+					<p>1. Créer un fichier Dockerfile avec le contenu suivant :</p>
+					<pre><code data-trim data-noescape>
+FROM node:latest
+
+# Create app directory
+RUN mkdir -p /usr/src/app
+WORKDIR /usr/src/app
+
+# Install dependencies
+ADD package.json /usr/src/app/
+RUN npm install
+
+# Copy project files
+ADD . /usr/src/app
+
+# Build the app
+RUN npm build
+
+# Expose the app port and the volume to share
+EXPOSE 3000
+VOLUME /usr/src/app/log
+
+# Start the app
+CMD node server.js
+                        </code></pre>
+				</div>
+			</section>
+			<section>
+				<p>2. Créer un fichier .dockerignore pour indiquer les fichiers à ne pas inclure dans l'image
+					(node_modules,&nbsp;.git...)</p>
+				<pre><code class="shell hljs">$ echo -e "node_modules\nnpm-debug.log" > .dockerignore</code></pre>
+				<div class="fragment">
+					<p>3. Créer un fichier package.json</p>
+					<pre><code class="shell hljs">$ echo '{ "name": "hello-node", "version": "1.0.0" }' > package.json</code></pre>
+				</div>
+				<div class="fragment">
+					<p>4. Builder l'image</p>
+					<pre><code class="shell hljs">$ docker build . -t hello-node</code></pre>
+				</div>
+				<div class="fragment">
+					<p>5. Lancer le conteneur hello-node</p>
+					<pre><code class="shell hljs">$ docker run -d --name hello-node -p 8080:3000 hello-node</code></pre>
+				</div>
+			</section>
+			<section>
+				<h2>Docker compose</h2>
+				<div class="container">
+					<p class="col" style="font-size: 80%;">Les fichiers docker-compose.yml permettent de définir et lancer des applications utilisant plusieurs containers.
+						<br><br>
+						<span class="fragment">On lance les conteneurs avec la commande <br> <code style="white-space: nowrap;">docker-compose up -d</code>.</span>
+					</p>
+					<div class="fragment" style="flex: 2;">
+						<pre><code class="yaml" data-trim data-noescape>
+version: '1'
+
+services:
+  mysql:
+    image: mysql
+    volumes:
+      - /var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=notsecret
+
+  php:
+    image: php:7.0-fpm
+    volumes:
+      - "~/www:/var/www/html"
+    links:
+      - mysql:db
+
+  nginx:
+    image: nginx
+    ports:
+      - 80:80
+    volumes:
+      - "~/docker/nginx:/etc/nginx/conf.d"
+      - "~/www:/var/www/html"
+    links:
+      - php:php
+                        </code></pre>
+						<p style="margin-bottom: 0;"><small>docker-compose.yml pour une architecture web</small></p>
+					</div>
+				</div>
+			</section>
+			<section>
+				<h2>Architecture pour une application web</h2>
+				<img src="img/docker-multi-container.png" width="1280" alt="Architecture docker multi container">
+			</section>
+		</section>
+		<section>
+			<h2>Conclusion</h2>
+			<div class="container">
+				<div class="col">
+					<h3>Pros</h3>
+					<ul>
+						<li>Léger en poids</li>
+						<li>Performant</li>
+						<li>Démarre vite</li>
+						<li>Multi-plateforme</li>
+						<li>Versionné</li>
+					</ul>
+				</div>
+				<div class="col">
+					<h3>Cons</h3>
+					<ul>
+						<li>Mises à jour de sécurité</li>
+						<li>Sauvegarde</li>
+						<li>Moins hermétique que des VMs</li>
+					</ul>
+				</div>
+			</div>
+		</section>
+		<section>
+			<h2>Pour aller plus loin</h2>
+			<p><a href="http://rhelblog.redhat.com/2015/07/29/architecting-containers-part-1-user-space-vs-kernel-space/"
+				   target="_blank">http://rhelblog.redhat.com/2015/07/29/architecting-containers-part-1-user-space-vs-kernel-space/</a>
+			</p>
+			<p><a href="https://blog.yadutaf.fr/2013/12/22/introduction-to-linux-namespaces-part-1-uts/"
+				  target="_blank">https://blog.yadutaf.fr/2013/12/22/introduction-to-linux-namespaces-part-1-uts/</a>
+			</p>
+			<p><a href="https://docs.docker.com/" target="_blank">https://docs.docker.com/</a></p>
+			<p><a href="https://www.geeek.org/check-list-projet-docker-153.html" target="_blank">https://www.geeek.org/check-list-projet-docker-153.html</a>
+			</p>
+			<p>Wikipedia <3</p>
+		</section>
+		<section>
+			<h1>The end</h1>
+			<p><a href="https://www.github.com/shaffe-fr">https://www.github.com/shaffe-fr</a></p>
+			<img src="img/requin-citron.jpg" alt="Baleine / requin - citron">
+		</section>
+	</div>
+</div>
+
+<script src="lib/js/head.min.js"></script>
+<script src="js/reveal.js"></script>
+
+<script>
+    // More info about config & dependencies:
+    // - https://github.com/hakimel/reveal.js#configuration
+    // - https://github.com/hakimel/reveal.js#dependencies
+    Reveal.initialize({
+        history: true,
+        dependencies: [
+            { src: 'plugin/markdown/marked.js' },
+            { src: 'plugin/markdown/markdown.js' },
+            { src: 'http://localhost:3001/socket.io/socket.io.js', async: true },
+	        { src: 'plugin/remote-control/remote.js', async: true },
+            {
+                src: 'plugin/highlight/highlight.js',
+                async: true,
+                callback: function callback () {
+                    window.hljs.initHighlightingOnLoad();
+                }
+            }
+        ]
+    });
+</script>
+</body>
+</html>
