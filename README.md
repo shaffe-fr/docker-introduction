@@ -2,7 +2,7 @@
 
 Cette présentation est le support de la conférence "Introduction à Docker" présentée par Karel Faille le 13 juin 2017 à Rodez.
 
-Pour lancer la présentation, ouvrir le fichier `index.html`.
+Vous pouvez consulter la présentation en ligne [ici](https://shaffe-fr.github.io/docker-introduction/).
 
 Pour installer le contrôle à distance :
 ```shell
